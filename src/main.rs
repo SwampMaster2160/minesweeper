@@ -1,5 +1,5 @@
 
-use glium::glutin::event;
+use glium::glutin::event::{self};
 use glium::{self, uniforms, Blend};
 use glium::{glutin, glutin::{event_loop, window, dpi}, Surface};
 use std::io::Cursor;
@@ -13,6 +13,7 @@ fn main() {
 	let mut bord = bord::Bord::new([10, 12]);
 	let bord_size = bord.get_size_in_pixels();
 	let header_size = 100;
+	let mut game_over = false;
 
 	// Setup window
 	let events_loop = event_loop::EventLoop::new();
@@ -20,7 +21,7 @@ fn main() {
 		.with_inner_size(dpi::LogicalSize::new(bord_size[0] as u32, bord_size[1] as u32 + header_size as u32)).with_title("Minesweeper").with_resizable(false);
 	let context_builder = glutin::ContextBuilder::new().with_vsync(true);
 	let display = glium::Display::new(window_builder, context_builder, &events_loop).unwrap();
-	let mut window_scale = display.get_framebuffer_dimensions().0 as f32 / 640.;
+	let mut window_scale = display.get_framebuffer_dimensions().0 as f32 / bord_size[0] as f32;
 
 	// Create texture
 	let image = image::load(Cursor::new(&include_bytes!("textures.png")),
@@ -65,7 +66,12 @@ fn main() {
 				event::WindowEvent::ScaleFactorChanged { scale_factor, .. } => window_scale = scale_factor as f32,
 				// Mouse click
 				event::WindowEvent::MouseInput { device_id: _, state, button, .. } => {
-					
+					if cursor_pos[1] >= 100 && !game_over && state == event::ElementState::Released {
+						game_over = bord.click(
+							[cursor_pos[0], (cursor_pos[1] as f32) as u16 - 100],
+							button,
+						);
+					}
 				}
 				_ => {}
 			},

@@ -4,23 +4,23 @@ use crate::texture;
 
 #[derive(Copy, Clone)]
 pub struct Cell {
-	is_cleared: bool,
-	has_flag: bool,
-	has_mine: bool,
-	nearby: u8
+	pub is_cleared: bool,
+	pub has_flag: bool,
+	pub has_mine: bool,
+	pub mine_neighbours: u8
 }
 
 impl Cell {
 	pub fn new_blank() -> Self {
 		Self {
-			is_cleared: false, has_flag: false, has_mine: false, nearby: 0,
+			is_cleared: false, has_flag: false, has_mine: false, mine_neighbours: 0,
 		}
 	}
 
 	pub fn new() -> Self {
 		let mut rng = rand::thread_rng();
 		Self {
-			is_cleared: false, has_flag: false, has_mine: rng.gen_bool(0.1), nearby: 0,
+			is_cleared: false, has_flag: false, has_mine: rng.gen_bool(0.1), mine_neighbours: 0,
 		}
 	}
 
@@ -40,8 +40,8 @@ impl Cell {
 				if self.has_mine {
 					out.extend(texture::Texture::Mine.generate_tris(pos));
 				}
-				else if self.nearby != 0 {
-					out.extend(texture::Texture::Nearby(self.nearby).generate_tris(pos));
+				else if self.mine_neighbours != 0 {
+					out.extend(texture::Texture::Nearby(self.mine_neighbours).generate_tris(pos));
 				}
 			},
 		}
