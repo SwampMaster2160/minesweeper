@@ -1,6 +1,5 @@
-
 use glium::glutin::event::{self};
-use glium::{self, uniforms, Blend};
+use glium::{uniforms, Blend};
 use glium::{glutin, glutin::{event_loop, window, dpi}, Surface};
 use std::io::Cursor;
 
@@ -11,17 +10,17 @@ mod cell;
 
 fn main() {
 	let mut bord = bord::Bord::new([10, 12]);
-	let bord_size = bord.get_size_in_pixels();
-	let header_size = 100;
+	let bord_size_in_pixels = bord.get_size_in_pixels();
+	let header_size = 40;
 	let mut game_over = false;
 
 	// Setup window
 	let events_loop = event_loop::EventLoop::new();
 	let window_builder = window::WindowBuilder::new()
-		.with_inner_size(dpi::LogicalSize::new(bord_size[0] as u32, bord_size[1] as u32 + header_size as u32)).with_title("Minesweeper").with_resizable(false);
+		.with_inner_size(dpi::LogicalSize::new(bord_size_in_pixels[0] as u32, bord_size_in_pixels[1] as u32 + header_size as u32)).with_title("Minesweeper").with_resizable(false);
 	let context_builder = glutin::ContextBuilder::new().with_vsync(true);
 	let display = glium::Display::new(window_builder, context_builder, &events_loop).unwrap();
-	let mut window_scale = display.get_framebuffer_dimensions().0 as f32 / bord_size[0] as f32;
+	let mut window_scale = display.get_framebuffer_dimensions().0 as f32 / bord_size_in_pixels[0] as f32;
 
 	// Create texture
 	let image = image::load(Cursor::new(&include_bytes!("textures.png")),
@@ -66,11 +65,15 @@ fn main() {
 				event::WindowEvent::ScaleFactorChanged { scale_factor, .. } => window_scale = scale_factor as f32,
 				// Mouse click
 				event::WindowEvent::MouseInput { device_id: _, state, button, .. } => {
-					if cursor_pos[1] >= 100 && !game_over && state == event::ElementState::Released {
+					if cursor_pos[1] > header_size && !game_over && state == event::ElementState::Released {
 						game_over = bord.click(
-							[cursor_pos[0], (cursor_pos[1] as f32) as u16 - 100],
+							[cursor_pos[0], (cursor_pos[1] as f32) as u16 - header_size],
 							button,
 						);
+					}
+					else if cursor_pos[0] < 32 && cursor_pos[1] < 32 {
+						bord = bord::Bord::new([10, 12]);
+						game_over = false;
 					}
 				}
 				_ => {}
@@ -83,12 +86,16 @@ fn main() {
 				frame.clear_color(0.4, 0.4, 0.4, 0.);
 
 				// Get tris
-				let mut gui_tris: Vec<vertex::Vertex> = Vec::new();
-				gui_tris.extend(bord.draw(header_size));
+				let mut tris: Vec<vertex::Vertex> = Vec::new();
+				tris.extend(bord.draw(header_size));
+
+				tris.extend(texture::Texture::Cell.generate_tris([0, 0]));
+				tris.extend(texture::Texture::Reset.generate_tris([0, 0]));
+
 				let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
 				// Draw tris
-				let gui_vertex_buffer = glium::vertex::VertexBuffer::new(&display, &gui_tris).unwrap();
+				let gui_vertex_buffer = glium::vertex::VertexBuffer::new(&display, &tris).unwrap();
 				let gui_uniforms = glium::uniform! {
 					matrix: [
 						[1. / window_size[0] as f32 * 2. * window_scale, 0., 0., 0.],

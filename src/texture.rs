@@ -46,6 +46,8 @@ pub enum Texture {
 	Mine,
 	Flag,
 	Nearby(u8),
+	CellNotMineGuaranteed,
+	Reset,
 }
 
 impl Texture {
@@ -56,6 +58,8 @@ impl Texture {
 			Self::Mine => 2,
 			Self::Flag => 3,
 			Self::Nearby(nearby) => 3 + nearby,
+			Self::CellNotMineGuaranteed => 0xB,
+			Self::Reset => 0xC,
 		}
 	}
 

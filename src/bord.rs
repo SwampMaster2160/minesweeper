@@ -7,21 +7,23 @@ pub struct Bord {
 }
 
 impl Bord {
-	pub fn new(size: [u16; 2]) -> Self {
+	pub fn new(size: [usize; 2]) -> Self {
+		// Create a bord of blank cells
 		let mut out = Self {
-			cells: ndarray::Array2::from_elem([size[0] as usize, size[1] as usize], cell::Cell::new_blank())
+			cells: ndarray::Array2::from_elem(size, cell::Cell::new_blank())
 		};
+		// Generate the cells so that some have mines
 		for x in 0..size[0] {
 			for y in 0..size[1] {
-				out.cells[[x as usize, y as usize]] = cell::Cell::new();
+				out.cells[[x, y]] = cell::Cell::new([x, y]);
 			}
 		}
 		// For each cell calculate how many neighbours have mines
-		for x in 0..(size[0] as usize) {
-			for y in 0..(size[1] as usize) {
+		for x in 0..size[0] {
+			for y in 0..size[1] {
 				let mut mine_neighbours = 0u8;
-				for x_1 in (x.max(1) - 1)..=(x + 1).min((size[0] - 1) as usize) {
-					for y_1 in (y.max(1) - 1)..=(y + 1).min((size[1] - 1) as usize) {
+				for x_1 in (x.max(1) - 1)..=(x + 1).min(size[0] - 1) {
+					for y_1 in (y.max(1) - 1)..=(y + 1).min(size[1] - 1) {
 						if x == x_1 && y == y_1 {
 							continue;
 						}
@@ -33,16 +35,20 @@ impl Bord {
 				out.cells[[x, y]].mine_neighbours = mine_neighbours;
 			}
 		}
+		// Return
 		out
 	}
 
 	pub fn draw(self: &Self, bord_start_y: u16) -> Vec<vertex::Vertex> {
+		// Vertex buffer to return
 		let mut out = Vec::new();
+		// Go over each cell and draw them
 		for (y, column) in self.cells.axis_iter(ndarray::Axis(1)).enumerate() {
 			for (x, tile) in column.iter().enumerate() {
 				out.extend(tile.draw([x as u16 * 32, y as u16 * 32 + bord_start_y]));
 			}
 		}
+		// Return
 		out
 	}
 
@@ -64,7 +70,7 @@ impl Bord {
 						valid_cell.is_cleared = true;
 					}
 					else {
-						self.cascade([pos[0] / 32, pos[1] / 32]);
+						self.clear_cell([(pos[0] / 32) as usize, (pos[1] / 32) as usize]);
 					}
 				},
 				event::MouseButton::Right => valid_cell.has_flag = !valid_cell.has_flag,
@@ -75,19 +81,20 @@ impl Bord {
 		game_over
 	}
 
-	fn cascade(self: &mut Self, pos: [u16; 2]) {
-		let cell = &mut self.cells[[pos[0] as usize, pos[1] as usize]];
+	fn clear_cell(self: &mut Self, pos: [usize; 2]) {
+		// Get a refrence to the cell
+		let cell = &mut self.cells[pos];
+		// Stop if cell already cleared
 		if cell.is_cleared {
 			return
 		}
+		// Clear cell
 		cell.is_cleared = true;
+		// Clear the surrounding eight neighbours if none of them are mines
 		if cell.mine_neighbours == 0 {
-			for x in ((pos[0]).max(1) - 1)..=((pos[0]) + 1).min((self.cells.shape()[0] - 1) as u16) {
-				for y in ((pos[1]).max(1) - 1)..=((pos[1]) + 1).min((self.cells.shape()[1] - 1) as u16) {
-					if x == pos[0] && y == pos[1] {
-						continue;
-					}
-					self.cascade([x, y]);
+			for x in ((pos[0]).max(1) - 1)..=((pos[0]) + 1).min(self.cells.shape()[0] - 1) {
+				for y in ((pos[1]).max(1) - 1)..=((pos[1]) + 1).min(self.cells.shape()[1] - 1) {
+					self.clear_cell([x, y]);
 				}
 			}
 		}
