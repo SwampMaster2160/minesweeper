@@ -15,27 +15,33 @@ pub fn generate_tris_from_id(id: u8, pos: [u16; 2]) -> [vertex::Vertex; 6] {
 
 	[vertex::Vertex {
 		position: [x_start, y_start],
-		texture_position: [texture_x_start, texture_y_end]
+		texture_position: [texture_x_start, texture_y_end],
+		color: [0., 0., 0., 0.],
 	},
 	vertex::Vertex {
 		position: [x_end, y_start],
-		texture_position: [texture_x_end, texture_y_end]
+		texture_position: [texture_x_end, texture_y_end],
+		color: [0., 0., 0., 0.],
 	},
 	vertex::Vertex {
 		position: [x_start, y_end],
-		texture_position: [texture_x_start, texture_y_start]
+		texture_position: [texture_x_start, texture_y_start],
+		color: [0., 0., 0., 0.],
 	},
 	vertex::Vertex {
 		position: [x_end, y_start],
-		texture_position: [texture_x_end, texture_y_end]
+		texture_position: [texture_x_end, texture_y_end],
+		color: [0., 0., 0., 0.],
 	},
 	vertex::Vertex {
 		position: [x_end, y_end],
-		texture_position: [texture_x_end, texture_y_start]
+		texture_position: [texture_x_end, texture_y_start],
+		color: [0., 0., 0., 0.],
 	},
 	vertex::Vertex {
 		position: [x_start, y_end],
-		texture_position: [texture_x_start, texture_y_start]
+		texture_position: [texture_x_start, texture_y_start],
+		color: [0., 0., 0., 0.],
 	}]
 }
 
