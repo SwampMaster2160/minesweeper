@@ -1,3 +1,7 @@
+// Don't open a console window when the program starts
+#![windows_subsystem = "windows"]
+
+// Imports
 use glium::glutin::event::{self};
 use glium::{uniforms, Blend};
 use glium::{glutin, glutin::{event_loop, window, dpi}, Surface};
